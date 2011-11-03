@@ -15,6 +15,7 @@ void printOutline();
 void printSpot(int row, int col);
 void clearBoard();
 void moveCursor();
+int fix(int row, int col);
 int stats(int row, int col);
 void recurse(int row, int col);
 int lawg(int num);
@@ -86,8 +87,6 @@ void moveCursor() {
             cursX = (cursX + SIDE + 1) % SIDE;
         } else if(ch == 'c') {
             clearBoard();
-        } else if(ch == 'm') {
-            stats(cursY, cursX);
         } else if(ch == 'n') {
             int change;
             do {
@@ -111,19 +110,8 @@ void moveCursor() {
             ch -= 48;
             i = 1 << (ch - 1);
             if(notTwo(val(cursY, cursX)) == 0) {
-                j = 0;
-                for(n = 0; n < SIDE; n++) {
-                    if(notTwo(val(n, cursX)) == 0) {
-                        j |= val(n, cursX);
-                    }
-                    if(notTwo(val(cursY, n)) == 0) {
-                        j |= val(cursY, n);
-                    }
-                    if(notTwo(game[cursY/3][cursX/3][n/3][n%3]) == 0) {
-                        j |= game[cursY/3][cursX/3][n/3][n%3];
-                    }
-                }
-                if(i & ~j) {
+                j = fix(cursY, cursX);
+                if(i & j) {
                     val(cursY, cursX) = i;
                     stats(cursY, cursX);
                     printSpot(cursY, cursX);
@@ -134,38 +122,41 @@ void moveCursor() {
                 printSpot(cursY, cursX);
             }
         } else if(ch == '0' || ch == KEY_BACKSPACE || ch == KEY_DC) {
-            j = 0;
-            for(n = 0; n < SIDE; n++) {
-                if(n != cursY && notTwo(val(n, cursX)) == 0) {
-                    j |= val(n, cursX);
-                } else {
-                    val(n, cursX) |= val(cursY, cursX);
-                    printSpot(n, cursX);
-                }
-                if(n != cursX && notTwo(val(cursY, n)) == 0) {
-                    j |= val(cursY, n);
-                } else {
-                    val(cursY, n) |= val(cursY, cursX);
-                    printSpot(cursY, n);
-                }
-                if((cursY%3 != n/3 || cursX%3 != n%3) && notTwo(game[cursY/3][cursX/3][n/3][n%3]) == 0) {
-                    j |= game[cursY/3][cursX/3][n/3][n%3];
-                } else {
-                    game[cursY/3][cursX/3][n/3][n%3] |= val(cursY, cursX);
-                    printSpot(3*(cursY/3)+n/3, 3*(cursX/3)+n%3);
-                }
-            }
-            val(cursY, cursX) = ~j & 0777;
+            val(cursY, cursX) = fix(cursY, cursX);
             printSpot(cursY, cursX);
         }
         mvchgat(2*cursY, 5*cursX+1, 3, A_REVERSE, 0, NULL);
     }
 }
 
+int fix(int row, int col) {
+    j = 0;
+    for(n = 0; n < SIDE; n++) {
+        if(n != row && notTwo(val(n, col)) == 0) {
+            j |= val(n, col);
+        } else {
+            val(n, col) |= val(row, col);
+            printSpot(n, col);
+        }
+        if(n != col && notTwo(val(row, n)) == 0) {
+            j |= val(row, n);
+        } else {
+            val(row, n) |= val(row, col);
+            printSpot(row, n);
+        }
+        if((row % 3 != n/3 || col % 3 != n%3) && notTwo(game[row/3][col/3][n/3][n%3]) == 0) {
+            j |= game[row/3][col/3][n/3][n%3];
+        } else {
+            game[row/3][col/3][n/3][n%3] |= val(row, col);
+            printSpot(3*(row/3)+n/3, 3*(col/3)+n%3);
+        }
+    }
+    return 0777 & ~j;
+}
+
 int stats(int row, int col) {
     int z, y, x;
     int change = 0;
-    j = 0777;
     if(notTwo(val(row, col)) == 0) {
         for(z = 0; z < SIDE; z++) {
             y = row/3;
@@ -187,6 +178,7 @@ int stats(int row, int col) {
             }
         }
     } else {
+        j = 0777;
         for(z = 0; z < SIDE; z++) {
             if(row != z) {
                 j &= (val(row, col) & ~val(z, col));
