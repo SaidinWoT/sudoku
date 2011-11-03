@@ -37,28 +37,28 @@ int main() {
 }
 
 void printOutline() {
-    for(n = 0; n < 45; n++) {
+    for(n = 0; n < 41; n++) {
         mvaddch( 5, n, ACS_HLINE);
         mvaddch(11, n, ACS_HLINE);
     }
     for(n = 0; n < 17; n++) {
-        mvaddch(n, 15, ACS_VLINE);
-        mvaddch(n, 30, ACS_VLINE);
+        mvaddch(n, 13, ACS_VLINE);
+        mvaddch(n, 27, ACS_VLINE);
     }
-    mvaddch( 5, 15, ACS_PLUS);
-    mvaddch( 5, 30, ACS_PLUS);
-    mvaddch(11, 15, ACS_PLUS);
-    mvaddch(11, 30, ACS_PLUS);
+    mvaddch( 5, 13, ACS_PLUS);
+    mvaddch( 5, 27, ACS_PLUS);
+    mvaddch(11, 13, ACS_PLUS);
+    mvaddch(11, 27, ACS_PLUS);
 }
 
 void printSpot(int row, int col) {
     if(print) {
-        mvprintw(2*row, 5*col+1, "%03o", val(row, col));
+        mvprintw(2*row, (14*(col/3))+4*(col%3)+1, "%03o", val(row, col));
     } else {
         if(val(row, col) && notTwo(val(row, col)) == 0) {
-            mvprintw(2*row, 5*col+1, " %d ", lawg(val(row, col)));
+            mvprintw(2*row, (14*(col/3))+4*(col%3)+1, " %d ", lawg(val(row, col)));
         } else {
-            mvprintw(2*row, 5*col+1, "   ");
+            mvprintw(2*row, (14*(col/3))+4*(col%3)+1, "   ");
         }
     }
 }
@@ -76,7 +76,7 @@ void clearBoard() {
 void moveCursor() {
     static int ch;
     for(ch = getch(); ch != 'q'; ch = getch()) {
-        mvchgat(2*cursY, 5*cursX+1, 3, A_NORMAL, 0, NULL);
+        mvchgat(2*cursY, (14*(cursX/3))+4*(cursX%3)+1, 3, A_NORMAL, 0, NULL);
         if(ch == 'w' || ch == 'k' || ch == KEY_UP) {
             cursY = (cursY + SIDE - 1) % SIDE;
         } else if(ch == 'a' || ch == 'h' || ch == KEY_LEFT) {
@@ -125,7 +125,7 @@ void moveCursor() {
             val(cursY, cursX) = fix(cursY, cursX);
             printSpot(cursY, cursX);
         }
-        mvchgat(2*cursY, 5*cursX+1, 3, A_REVERSE, 0, NULL);
+        mvchgat(2*cursY, (14*(cursX/3))+4*(cursX%3)+1, 3, A_REVERSE, 0, NULL);
     }
 }
 
